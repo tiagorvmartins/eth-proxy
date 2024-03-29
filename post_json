@@ -1,0 +1,1 @@
+{"id":1,"jsonrpc":"2.0","params":["0xfe3b557e8fb62b89f4916b721be55ceb828dbd73","latest"],"method": "eth_getBalance"}

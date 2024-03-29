@@ -11,13 +11,11 @@ import (
 	"github.com/tiagorvmartins/eth-proxy/api/utils"
 )
 
-func Example(c *gin.Context) {
+func BasePath(c *gin.Context) {
 	var msg models.Request
 	request_id := c.GetString("x-identifier-id")
 
-	// Bind request payload with our model
 	if binderr := c.ShouldBindJSON(&msg); binderr != nil {
-
 		log.Error().Err(binderr).Str("request_id", request_id).
 			Msg("Error occurred while binding request data")
 
@@ -32,6 +30,7 @@ func Example(c *gin.Context) {
 	rmqProducer := utils.RMQProducer{
 		Queue:            os.Getenv("QUEUE_NAME"),
 		ConnectionString: connectionString,
+		QueueCallback:    c.GetString("x-token"),
 	}
 
 	msgBytes, err := json.Marshal(msg)
@@ -45,7 +44,5 @@ func Example(c *gin.Context) {
 		return
 	}
 	reply := rmqProducer.PublishMessage("application/json", []byte(msgBytes), request_id)
-	c.JSON(http.StatusOK, gin.H{
-		"response": reply,
-	})
+	c.JSON(http.StatusOK, reply)
 }

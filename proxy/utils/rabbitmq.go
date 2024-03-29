@@ -40,17 +40,10 @@ func (x RMQConsumer) Consume() {
 	)
 	x.OnError(err, fmt.Sprintf("Failed to declare a queue on Consumer with Id: %s", x.Id))
 
-	// err = ch.Qos(
-	// 	1,     // prefetch count
-	// 	0,     // prefetch size
-	// 	false, // global
-	// )
-	// x.OnError(err, fmt.Sprintf("Failed to set QoS on Consumer with Id: %s", x.Id))
-
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		false,  // auto-ack
+		true,   // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait

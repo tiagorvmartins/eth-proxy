@@ -1,44 +1,105 @@
+name: ethereum
 services:
-  rabbitmq:
-    container_name: rabbitmq
-    image: 'rabbitmq:alpine'
-    networks:
-      - eth-proxy
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status"]
-      interval: 5s
-      timeout: 15s
-      retries: 5
-  api:
-    container_name: api
-    build: ./api
+  rabbitmq: # No ports are exposed
     restart: unless-stopped
-    ports:
-      - "8080:8080"
+    container_name: rabbitmq
+    hostname: rabbitmq
+    build: ./
     networks:
-      - eth-proxy
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    env_file:
-      - path: ./api/.env
-        required: true
-  proxy:
+      - bridge_network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  proxy: # No ports are exposed
     container_name: proxy
     build: ./proxy
     restart: unless-stopped
     networks:
-      - eth-proxy
+      - bridge_network
     depends_on:
       rabbitmq:
         condition: service_healthy
     env_file:
-      - path: ./proxy/.env
+      - path: ./.proxy.env
         required: true
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://localhost:8090/healthz || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  api: # No ports are exposed
+    restart: unless-stopped
+    container_name: api
+    build: ./api
+    networks:
+      - bridge_network
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://localhost:8080/healthz || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy
+    env_file:
+      - path: ./.api.env
+        required: true
+  nginx:
+    restart: unless-stopped
+    container_name: nginx
+    build: ./nginx
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    ports:
+      - "443:443"
+    networks:
+      - bridge_network
+  prometheus: # No ports are exposed
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://localhost:9090/-/healthy || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - bridge_network
+  grafana: # No ports are exposed
+    container_name: grafana
+    image: grafana/grafana-oss
+    networks:
+      - bridge_network
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/RabbitMQ/dashboard.json
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=https://localhost/grafana/
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasources.yml # Datasource spec
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/common.yml # Dashboards spec
+      - ./grafana/rabbitmq_dashboard.json:/var/lib/grafana/dashboards/RabbitMQ/dashboard.json # Dashboard JSON config RabbitMQ Overview
+      - ./grafana/gin_dashboard.json:/var/lib/grafana/dashboards/API/dashboard.json # Dashboard JSON config RabbitMQ Overview
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_healthy
 
 networks:
-  eth-proxy:
+  bridge_network:
     driver: bridge

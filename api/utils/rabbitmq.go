@@ -13,6 +13,7 @@ import (
 type RMQProducer struct {
 	Queue            string
 	ConnectionString string
+	QueueCallback    string
 }
 
 func (x RMQProducer) OnError(err error, msg string) {
@@ -31,12 +32,12 @@ func (x RMQProducer) PublishMessage(contentType string, body []byte, request_id 
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
+		x.QueueCallback, // name
+		false,           // durable
+		false,           // delete when unused
+		true,            // exclusive
+		false,           // no-wait
+		nil,             // arguments
 	)
 	x.OnError(err, "Failed to declare a queue")
 

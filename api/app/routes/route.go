@@ -7,5 +7,5 @@ import (
 
 // Function to setup routers and router groups
 func SetupRouters(app *gin.Engine) {
-	app.POST("/", controllers.Example)
+	app.POST("/:token", controllers.BasePath)
 }
