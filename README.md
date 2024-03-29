@@ -26,6 +26,12 @@ curl -k --request POST \
 '
 ```
 
+# Grafana
+
+Grafana is hosted behind the reverse proxy using https with self-signed certificate (trust it to open) available at:
+https://localhost/grafana
+
+
 # For benchmark:
 
 Required packages
