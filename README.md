@@ -5,6 +5,17 @@
 # Setting up environment:
 
 ```
+cp .api.env.sample .api.env
+cp .proxy.env.sample .proxy.env
+
+# Add your PROVIDER URLs
+# You can add as many provider urls as you want, example is given in the sample of the expected structure
+# For each PROVIDERNAME please add an environment variable called PROVIDERNAME_URL
+```
+
+# Run the environment
+
+```
 docker compose up -d
 ```
 

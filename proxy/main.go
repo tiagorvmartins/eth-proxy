@@ -22,7 +22,7 @@ func main() {
 
 	availableProviders := strings.Split(providerNamesStr, ",")
 
-	threadsPerConsumerStr := os.Getenv("NUM_THREADS_PER_CONSUMER")
+	threadsPerConsumerStr := os.Getenv("NUM_THREADS_PER_PROVIDER")
 	threadsPerConsumer, err := strconv.Atoi(threadsPerConsumerStr)
 	if err != nil {
 		panic(err)
