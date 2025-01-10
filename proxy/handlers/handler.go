@@ -11,7 +11,23 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
+	"encoding/json"
 )
+
+type Request struct {
+	Path    string	      `json:"Path" binding:"omitempty"`
+	JsonRpc string        `json:"jsonrpc" binding:"required"`
+	Method  string        `json:"method" binding:"required"`
+	Params  []interface{} `json:"params"`
+	Id      *int          `json:"id" binding:"required"`
+}
+
+type ProviderRequest struct {
+	JsonRpc string        `json:"jsonrpc" binding:"required"`
+	Method  string        `json:"method" binding:"required"`
+	Params  []interface{} `json:"params"`
+	Id      *int          `json:"id" binding:"required"`
+}
 
 func Handler(name string) func(queue string, msg amqp.Delivery, err error, ch *amqp.Channel, id string) {
 	return func(queue string, msg amqp.Delivery, err error, ch *amqp.Channel, id string) {
@@ -26,7 +42,26 @@ func Handler(name string) func(queue string, msg amqp.Delivery, err error, ch *a
 
 		log.Info().Msgf("[%s] Message received on Consumer on '%s' queue: %s", id, queue, string(msg.Body))
 
-		req, err := http.NewRequest("POST", providerUrl, bytes.NewReader(msg.Body))
+
+		// Parse the JSON into a struct
+		var data Request
+		err = json.Unmarshal(msg.Body, &data)
+		if err != nil {
+			log.Error().Msgf("[%s] Failed to parse JSON with Path on Consumer: %s", id, err)
+		}
+
+		var dataToSend ProviderRequest
+		err = json.Unmarshal(msg.Body, &dataToSend)
+		if err != nil {
+			log.Error().Msgf("[%s] Failed to parse JSON to Send on Consumer: %s", id, err)
+		}
+
+		jsonData, err := json.Marshal(dataToSend)
+		if err != nil {
+			log.Error().Msgf("[%s] Failed to marshal data to JSON: %s", id, err)
+		}
+
+		req, err := http.NewRequest("POST", providerUrl+string(data.Path), bytes.NewReader(jsonData))
 		if err != nil {
 			log.Error().Msgf("[%s] Failed to mashal request on Consumer: %s", id, err)
 		}

@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +13,7 @@ func Token() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Message": "Unauthorized"})
 		}
 		c.Header("x-token", token)
+		c.Set("x-token", token)
 		c.Next()
 	}
 }

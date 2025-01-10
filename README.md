@@ -21,26 +21,20 @@ docker compose up -d
 
 # Usage:
 
+Using https (self-signed certificate):
 ```
-curl -k --request POST \
---url https://localhost/ASKFJNAKSJNFKJASDJKANSKJDNAJKDNAJKSNDAKNSDKAJSD \
---header 'accept: application/json' --header 'content-type: application/json' --data '
-{
-  "id": 1,
-  "jsonrpc": "2.0",
-  "params": [
-    "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
-    "latest"
-  ],
-  "method": "eth_getBalance"
-}
-'
+curl --request POST --url https://localhost:4343/ASKFJNAKSJNFKJASDJKANSKJDNAJKDNAJKSNDAKNSDKAJSD --header 'accept: application/json' --header 'content-type: application/json' --data '{"id": 1,"jsonrpc": "2.0","params": ["0xfe3b557e8fb62b89f4916b721be55ceb828dbd73","latest"],"method": "eth_getBalance"}'
+```
+
+Using http:
+```
+curl --request POST --url http://localhost:8080/ASKFJNAKSJNFKJASDJKANSKJDNAJKDNAJKSNDAKNSDKAJSD --header 'accept: application/json' --header 'content-type: application/json' --data '{"id": 1,"jsonrpc": "2.0","params": ["0xfe3b557e8fb62b89f4916b721be55ceb828dbd73","latest"],"method": "eth_getBalance"}'
 ```
 
 # Grafana
 
 Grafana is hosted behind the reverse proxy using https with self-signed certificate (trust it to open) available at:
-https://localhost/grafana
+https://localhost:4343/grafana
 
 
 # For benchmark:

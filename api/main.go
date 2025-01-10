@@ -22,7 +22,7 @@ func main() {
 	// Read ADDR and port
 	addr := os.Getenv("GIN_ADDR")
 	port := os.Getenv("GIN_PORT")
-	log.Info().Msgf("Starting service on http//:%s:%s", addr, port)
+	log.Info().Msgf("Starting service on http://%s:%s", addr, port)
 	if err := app.Run(fmt.Sprintf("%s:%s", addr, port)); err != nil {
 		log.Fatal().Err(err).Msg("Error occurred while setting up the server")
 	}

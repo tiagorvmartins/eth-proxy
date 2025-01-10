@@ -39,7 +39,6 @@ func SetupApp() *gin.Engine {
 	// Add Token, Identifier, IdentifierLogger and CORS middleware
 	log.Info().Msg("Adding cors, request id and request logging middleware")
 	app.Use(
-		middlewares.Token(),
 		middlewares.Identifier(),
 		middlewares.IdentifierLogger(),
 		cors.New(cors.Config{

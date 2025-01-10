@@ -8,4 +8,5 @@ RUN mkdir -p /etc/ssl/certs/
 RUN mkdir -p /etc/ssl/private/
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/local.key -out /etc/ssl/certs/local.crt -config config.conf
 
-EXPOSE 433
+EXPOSE 443
+EXPOSE 80
